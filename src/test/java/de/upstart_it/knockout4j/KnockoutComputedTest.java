@@ -65,15 +65,47 @@ public class KnockoutComputedTest {
     }
     
     @Test
+    public void testCaching() {
+        Ko ko = new Ko();
+        var age = ko.observable(42);
+        var level1evaluated = new AtomicBoolean(false);
+        var level1 = ko.computed(() -> {
+            level1evaluated.set(true);
+            return "I am "+age.get()+" years old";
+        });
+        assertTrue(level1evaluated.get());
+        level1evaluated.set(false);
+        assertEquals(42, age.get());
+        age.set(42);//same value should not trigger reevaluation
+        assertFalse(level1evaluated.get(), "same value should not trigger reevaluation");
+    }
+    
+    @Test
     public void testNestedEvaluation() {
         Ko ko = new Ko();
         var age = ko.observable(42);
-        var level1 = ko.computed(() -> "I am "+age.get()+" years old");
-        var level2 = ko.computed(() -> "I say: "+level1.get());
+        var level1evaluated = new AtomicBoolean(false);
+        var level1 = ko.computed(() -> {
+            level1evaluated.set(true);
+            return "I am "+age.get()+" years old";
+        });
+        var level2evaluated = new AtomicBoolean(false);
+        var level2 = ko.computed(() -> {
+            level2evaluated.set(true);
+            return "I say: "+level1.get();
+        });
+        assertTrue(level1evaluated.get());
+        assertTrue(level2evaluated.get());
+        level1evaluated.set(false);
+        level2evaluated.set(false);
         assertEquals(42, age.get());
         assertEquals("I am 42 years old", level1.get());
         assertEquals("I say: I am 42 years old", level2.get());
+        assertFalse(level1evaluated.get());
+        assertFalse(level2evaluated.get());
         age.set(23);
+        assertTrue(level1evaluated.get());
+        assertTrue(level2evaluated.get());
         assertEquals(23, age.get());
         assertEquals("I am 23 years old", level1.get());
         assertEquals("I say: I am 23 years old", level2.get());

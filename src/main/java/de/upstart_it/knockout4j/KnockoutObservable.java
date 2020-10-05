@@ -43,6 +43,13 @@ public class KnockoutObservable<T> implements Supplier<T>, Consumer<T> {
      * @param val 
      */
     public synchronized void set(T val) {
+        if (
+            (this.value == null && val == null)
+            || this.value != null && this.value.equals(val)
+        ) {
+            //nothing changed.
+            return;
+        }
         this.value = val;
         notifyObservers();
     }
