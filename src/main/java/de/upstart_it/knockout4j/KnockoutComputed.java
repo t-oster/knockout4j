@@ -28,7 +28,9 @@ public class KnockoutComputed<T> extends KnockoutObservable<T> {
             needsEvaluation = true;
             return;
         }
-        registry.startDependencyTracking(this);
+        if (!registry.startDependencyTracking(this)) {
+            return;
+        }
         set(valFunc.get());
         needsEvaluation = false;
         registry.stopDependencyTracking(this);

@@ -60,9 +60,13 @@ public class Ko {
         return result;
     }
     
-    void startDependencyTracking(KnockoutComputed c) {
+    boolean startDependencyTracking(KnockoutComputed c) {
+        if (recording.contains(c)) {
+            return false;
+        }
         clearDependenciesFor(c);
         recording.push(c);
+        return true;
     }
     
     void stopDependencyTracking(KnockoutComputed c) {

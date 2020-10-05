@@ -65,6 +65,17 @@ public class KnockoutComputedTest {
     }
     
     @Test
+    public void testCycleAvoidance() {
+        Ko ko = new Ko();
+        var vorname = ko.observable("Peter");
+        KnockoutObservable<String> b = ko.observable("Test");
+        var a = ko.pureComputed(() -> vorname.get() + b.get());
+        //b = ko.pureComputed(() -> a.get()+ vorname.get());
+        assertEquals("PeternullPeter", a.get());
+        assertEquals("PeternullPeter", a.get());
+    }
+    
+    @Test
     public void testDeferredEvaluation() {
         Ko ko = new Ko();
         var vorname = ko.observable("Peter");
