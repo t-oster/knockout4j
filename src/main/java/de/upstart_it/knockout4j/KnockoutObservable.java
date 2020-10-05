@@ -32,10 +32,7 @@ public class KnockoutObservable<T> implements Supplier<T>, Consumer<T> {
      */
     @Override
     public T get() {
-        KnockoutComputed o = registry.getCurrentlyEvaluatedObservable();
-        if (o != null) {
-            this.subscribe(o);
-        }
+        registry.registerDependency(this);
         return peek();
     }
     /**
@@ -87,6 +84,5 @@ public class KnockoutObservable<T> implements Supplier<T>, Consumer<T> {
      */
     public void dispose() {
         observers.clear();
-        registry.dispose(this);
     }
 }

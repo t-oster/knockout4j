@@ -5,8 +5,8 @@
  */
 package de.upstart_it.knockout4j;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Stack;
 import java.util.function.Supplier;
 
@@ -37,57 +37,53 @@ public class Ko {
     }
     
     private final Stack<KnockoutComputed> recording = new Stack<>();
-    private final Set<KnockoutObservable> observables = new LinkedHashSet<>();
+    private final Stack<List<KnockoutObservable>> dependencies = new Stack<>();
     
     public <T> KnockoutObservable<T> observable(T val) {
-        KnockoutObservable<T> result = new KnockoutObservable<>(this, val);
-        observables.add(result);
-        return result;
+        return new KnockoutObservable<>(this, val);
     }
     public <T> KnockoutComputed<T> computed(Supplier<T> val) {
-        KnockoutComputed<T> result =  new KnockoutComputed<>(this, val, false, false);
-        observables.add(result);
-        return result;
+        return  new KnockoutComputed<>(this, val, false, false);
     }
     public <T> KnockoutComputed<T> computed(Supplier<T> val, boolean deferEvaluation) {
-        KnockoutComputed<T> result =  new KnockoutComputed<>(this, val, false, deferEvaluation);
-        observables.add(result);
-        return result;
+        return new KnockoutComputed<>(this, val, false, deferEvaluation);
     }
     public <T> KnockoutComputed<T> pureComputed(Supplier<T> val) {
-        KnockoutComputed<T> result = new KnockoutComputed<>(this, val, true, false);
-        observables.add(result);
-        return result;
+        return new KnockoutComputed<>(this, val, true, false);
     }
     
+    /**
+     * Starts dependency tracking for the given computed.
+     * A new list of dependencies is created.
+     * If the same computed is already tracking, it returns false (cycle avoidance)
+     * @param c The computed which is currently evaluating
+     * @return 
+     */
     boolean startDependencyTracking(KnockoutComputed c) {
         if (recording.contains(c)) {
             return false;
         }
-        clearDependenciesFor(c);
         recording.push(c);
+        dependencies.add(new LinkedList<>());
         return true;
     }
     
-    void stopDependencyTracking(KnockoutComputed c) {
+    /**
+     * Stops dependency tracking and returns the list of Dependencies
+     * @param c 
+     */
+    List<KnockoutObservable> stopDependencyTracking(KnockoutComputed c) {
         if (!c.equals(recording.pop())) {
             throw new RuntimeException("Stack corrupted");
         }
+        return dependencies.pop();
     }
     
-    KnockoutComputed getCurrentlyEvaluatedObservable() {
-        return recording.isEmpty() ? null : recording.peek();
-    }
-
-    private void clearDependenciesFor(KnockoutComputed c) {
-        observables.forEach(o -> o.unsubscribe(c));
-    }
-    
-    //called from observable.dispose
-    void dispose(KnockoutObservable o) {
-        if (o instanceof KnockoutComputed) {
-            clearDependenciesFor((KnockoutComputed) o);
+    void registerDependency(KnockoutObservable observed) {
+        if (recording.isEmpty() || dependencies.peek().contains(observed)) {
+            return;
         }
-        observables.remove(o);
+        dependencies.peek().add(observed);
     }
+    
 }
