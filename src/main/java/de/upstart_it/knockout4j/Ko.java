@@ -71,8 +71,8 @@ public class Ko {
         observables.forEach(o -> o.unsubscribe(c));
     }
     
-    //called from observable.free
-    void free(KnockoutObservable o) {
+    //called from observable.dispose
+    void dispose(KnockoutObservable o) {
         if (o instanceof KnockoutComputed) {
             clearDependenciesFor((KnockoutComputed) o);
         }

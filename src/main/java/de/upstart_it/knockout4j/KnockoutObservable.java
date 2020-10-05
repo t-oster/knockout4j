@@ -74,8 +74,12 @@ public class KnockoutObservable<T> implements Supplier<T>, Consumer<T> {
         observers.remove(o);
     }
     
-    public void free() {
+    /**
+     * Clears all observers and unregisters from all dependencies (if it's
+     * a computed observable)
+     */
+    public void dispose() {
         observers.clear();
-        registry.free(this);
+        registry.dispose(this);
     }
 }
