@@ -30,7 +30,7 @@ public class KnockoutComputedTest {
     }
     
     @Test
-    public void testDeferredEvaluation() {
+    public void testPureComputed() {
         Ko ko = new Ko();
         var vorname = ko.observable("Peter");
         var nachname = ko.observable("Pan");
@@ -61,6 +61,30 @@ public class KnockoutComputedTest {
         vorname.set("Peter");//should trigger change
         assertFalse(evaluated.get());
         assertEquals("Peter Müller", vollerName.get());
+        assertTrue(evaluated.get());
+    }
+    
+    @Test
+    public void testDeferredEvaluation() {
+        Ko ko = new Ko();
+        var vorname = ko.observable("Peter");
+        var nachname = ko.observable("Pan");
+        var evaluated = new AtomicBoolean(false);
+        var vollerName = ko.computed(() -> {
+            evaluated.set(true);
+            if ("Kurt".equals(vorname.get())) {
+                return "Kurt, einfach Kurt";
+            }
+            //Dependency for nachname only created when vorname not 'Kurt'
+            return vorname.get()+ " " +nachname.get();
+        }, true);
+        assertFalse(evaluated.get());
+        vorname.set("Peter2");
+        assertFalse(evaluated.get());
+        assertEquals("Peter2 Pan", vollerName.get());
+        assertTrue(evaluated.get());
+        evaluated.set(false);
+        vorname.set("Peter3");
         assertTrue(evaluated.get());
     }
     

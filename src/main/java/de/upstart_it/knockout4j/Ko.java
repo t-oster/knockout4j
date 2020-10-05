@@ -29,6 +29,9 @@ public class Ko {
     public static <T> KnockoutComputed<T> Computed(Supplier<T> val) {
         return getInstance().computed(val);
     }
+    public static <T> KnockoutComputed<T> Computed(Supplier<T> val, boolean deferEvaluation) {
+        return getInstance().computed(val, deferEvaluation);
+    }
     public static <T> KnockoutComputed<T> PureComputed(Supplier<T> val) {
         return getInstance().pureComputed(val);
     }
@@ -42,12 +45,17 @@ public class Ko {
         return result;
     }
     public <T> KnockoutComputed<T> computed(Supplier<T> val) {
-        KnockoutComputed<T> result =  new KnockoutComputed<>(this, val, false);
+        KnockoutComputed<T> result =  new KnockoutComputed<>(this, val, false, false);
+        observables.add(result);
+        return result;
+    }
+    public <T> KnockoutComputed<T> computed(Supplier<T> val, boolean deferEvaluation) {
+        KnockoutComputed<T> result =  new KnockoutComputed<>(this, val, false, deferEvaluation);
         observables.add(result);
         return result;
     }
     public <T> KnockoutComputed<T> pureComputed(Supplier<T> val) {
-        KnockoutComputed<T> result = new KnockoutComputed<>(this, val, true);
+        KnockoutComputed<T> result = new KnockoutComputed<>(this, val, true, false);
         observables.add(result);
         return result;
     }

@@ -12,12 +12,12 @@ public class KnockoutComputed<T> extends KnockoutObservable<T> {
     boolean needsEvaluation;
     private final Supplier<T> valFunc;
     
-    KnockoutComputed(Ko registry, Supplier<T> valFunc, boolean isPure) {
+    KnockoutComputed(Ko registry, Supplier<T> valFunc, boolean isPure, boolean deferEvaluation) {
         super(registry, null);
         this.valFunc = valFunc;
         this.isPure = isPure;
         needsEvaluation = true;
-        if (!this.isPure) {
+        if (!this.isPure && !deferEvaluation) {
             evaluate();
         }
     }
